@@ -47,6 +47,8 @@ Elimde inverted pendulum sistemiyle alakalı yazılmış bir paper var. Gerekti�
 Kısacası, Part 3, Fonksiyonlar, Denklemler oluşturacağımız, doğruluklarını kontroledeceğimiz, Deep Learning modelimizi Fonksiyonun içine gömmeye çalışacağımız bir aşama olacaktır. Bu aşamada büyük titizlik yapmamız, herşeyin doğru olduğunu check etmemiz gerekiyor. Bu check & verification olmazsa ilerlemek makul değildir.
 
 
+
+
 # Part 4. Simulations
 
 Part 4 ise noktayı koyduğumuz stepdir. Oluşturduğumuz formüllerimizi, fonksiyonlarımızı ele alıp, MPC controllere sokacağız. Controlun nasıl ilerledğini adım-adım takip etmemiz gerekecektir. Simulasyonlar, verificationlar, zaman takipi, real-time application için uygunluğu bu bölümde simule edilecek ve tartışılacaktır. Elimizde bir çok case için ve farklı horizonlar için MPC control simulasyonları toplamamız gerekiyor. 
@@ -54,3 +56,42 @@ Part 4 ise noktayı koyduğumuz stepdir. Oluşturduğumuz formüllerimizi, fonks
 # İmprovements
 
 Simulasyon sonuçlarına göre gereken improvementler belirlenecektir. Bu improvementler bizi hem yazilan paperden farklandiracak, hem kendi imzamizi yazdirmamiza vesile olacaktir. Real time kontrolü hızlandırmak için birtakım fikirler sunacağım sana. Sen de onları değerlendireceksin. Kendin daha iyi yöntem ve metotlar belirleyeceksin. Son olarak, belirlediğimiz metotları uygulayacağız. 
+
+
+
+# Şartlar.
+
+Kod yazarken acele etmeyeceksin. Adım-adım ilerleyeceğiz. Kodu yazarken VS Code kullanacağım. VS Code içinde jupyter kernelim var. İçinde tüm packageler yüklü. Dosyalarımız genel olarak jupyter dosyası (ipynb) olacaktır. O yüzden tüm kodlarımızı cell-cell yazacağız. Mesela, dinamiklerin yazıldığı belirlendigi cell, RK4 metodu celli ve s. Kodları yazarken de bunların hakkında bilgi vereceksin. Neyi neden yaptığımız belli olmak zorunda. Aksi takdirde baya ilerleyip, sonra herşeyin yanlış olduğunu anlarız. Bunu asla istemeyiz. Tüm kod içerikleri mutlaka ama mutlaka inglizce olmak zorunda. Commentler, variable isimleri, kod icerigindeki tum aciklamalar ingilizce olmak zorunda. Bu tezin en önemli şartlarından birisidir. Sakın unutma. 
+
+
+# Hardware limits
+
+Tezimizi yazarken bazi hardware limitlemelerinin de farkinda olmak gerekiyor. Ben asagida hardware limitlerimi detayli sekilde, eksiksiz sekilde verdim. Bunlari herzaman dikkatimizde bulundurmak zorundayiz. Kod bloklari sistemimizi dondurmamali, bize asla sorun cikarmamali. 
+
+OS       EndeavourOS x86_64
+Host     HP Pavilion Power Laptop 15-cb0xx
+Kernel   Linux 6.18.54-2-lts
+Shell    fish 4.9.3
+DE       GNOME 50.5
+WM       Mutter (Wayland)
+CPU      Intel(R) Core(TM) i7-7700HQ (8) @ 3.80 GHz
+GPU      NVIDIA GeForce GTX 1050 Mobile [Discrete]
+GPU      Intel HD Graphics 630 @ 1.10 GHz [Integrated]
+Memory   5.95 GiB / 11.56 GiB
+Disk     86.43 GiB / 589.51 GiB (15%) - ext4 HDD
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
