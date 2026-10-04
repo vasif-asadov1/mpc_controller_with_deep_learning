@@ -1,0 +1,461 @@
+#LyX 2.5 created this file. For more info see https://www.lyx.org/
+\lyxformat 643
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children no
+\language american
+\language_package default
+\inputencoding utf8
+\fontencoding auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement class
+\float_alignment class
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification default
+\crossref_package refstyle
+\use_formatted_ref 0
+\use_minted 0
+\use_lineno 0
+\backgroundcolor none
+\fontcolor none
+\notefontcolor lightgray
+\boxbgcolor red
+\table_border_color default
+\table_odd_row_color default
+\table_even_row_color default
+\table_alt_row_colors_start 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tablestyle default
+\tracking_changes false
+\output_changes false
+\change_bars false
+\postpone_fragile_content true
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\docbook_mathml_version 0
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Deep Learning Based Model Predictive Control of Nonlinear Systems
+\end_layout
+
+\begin_layout Section
+Dataset Generation
+\end_layout
+
+\begin_layout Subsection
+Dynamics Equations
+\end_layout
+
+\begin_layout Standard
+Projenin ilk aşaması mükemmel bir veri seti üretmektir.
+ Bu veri setinin üzerinde deep learning modeli kuracağız.
+ Kurduğumuz model inverted cart pendulum sisteminin diferensiyal denklemlerini,
+ gerçekci fiziğini birebir yansıtabilmeli.
+ Bunun için 
+\series bold
+dataset
+\series default
+ 
+\series bold
+generation
+\series default
+ adımı ilk ve aslında tüm projenin gidişatını belirleyen en önemli adımdır.
+ Bunun için bu adıma çok özen göstermek lazım.
+ 
+\end_layout
+
+\begin_layout Standard
+Kuracağımız modelin;
+ sistem dinamiklerini nasıl öğrendiğini test etmek için farklı başlangıçlarda simulasyonlar yapmamız gerekecektir.
+ Mesela,
+ tam yukarı pozisyonda bırakarak sarkacın sadece yer çekimi kuvveti altında nasıl sallanarak,
+ en sonda stable - sükunet haline döndüğünü test edip görmemiz gerekiyor.
+ Bunun için sistem fiziği gerçekci olmak zorunda.
+ Oyüzden de,
+ 
+\series bold
+sistemimize friction - sürtünme kuvvetlerini:
+ yani,
+ arabanın rayla ve sarkaç eklemindeki sürtünmelerini (sürtünme katsayılarını) eklemek zorundayız.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\text{Pendulum Sürtünmesi: }\tau_{eff}=\frac{M_{t}}{m_{pend}L}b_{p}\dot{\theta}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\text{Araba sürtünmesi: }F_{eff}=F-b_{c}\dot{x}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Bu formülleri kullanarak,
+ diferensiyal denklemlerimizi aşağıdaki gibi yazabiliriz:
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\ddot{\theta}=\frac{M_{t}g\sin\theta-\tau_{eff}-\cos\theta\left(F_{eff}+m_{pend}L\dot{\theta}^{2}\sin\theta\right)}{L\left(M_{t}-m_{pend}\cos^{2}\theta\right)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\ddot{x}=\frac{F_{eff}+m_{pend}L\left(\dot{\theta}^{2}\sin\theta-\ddot{\theta}\cos\theta\right)}{M_{t}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Bu formüllerde,
+ Total Mass 
+\begin_inset Formula $M_{t}=M_{cart}+m_{pend}$
+\end_inset
+
+,
+ Effective linear force (yani sürtünmeyi çıktığımızda etki eden force) 
+\begin_inset Formula $F_{eff}$
+\end_inset
+
+,
+ cart friction coefficient 
+\begin_inset Formula $b_{c}$
+\end_inset
+
+,
+ rotational damping (yani,
+ dönen nesneye - penduluma dönüş yönünün tersinde etki eden ters kuvvet) 
+\begin_inset Formula $\tau_{eff}$
+\end_inset
+
+ ve joint friction coefficient 
+\begin_inset Formula $b_{p}$
+\end_inset
+
+ olarak belirlenmiştir.
+ 
+\end_layout
+
+\begin_layout Standard
+State vektörümüz 
+\begin_inset Formula $\mathbf{s}=[x,\dot{x},\theta,\dot{\theta}]^{T}$
+\end_inset
+
+;
+ 
+\begin_inset Formula $x$
+\end_inset
+
+ - position,
+ 
+\begin_inset Formula $\dot{x}$
+\end_inset
+
+- velocity,
+ 
+\begin_inset Formula $\theta$
+\end_inset
+
+ - angle ve 
+\begin_inset Formula $\dot{\theta}$
+\end_inset
+
+- angular velocity olarak belirlenmiştir.
+ 
+\end_layout
+
+\begin_layout Standard
+Next state vektörü,
+ state vektörünün türevine eşit oluyor ve continuous time-dan discrete time-a Runge Kutta 4 metodu ile geçiriliyor.
+ RK4 metodu ile time intervali 
+\begin_inset Formula $\Delta t=0.02s$
+\end_inset
+
+ kabulederek 
+\begin_inset Formula $(\mathbf{s},F)=[\dot{x},\ddot{x},\dot{\theta},\ddot{\theta}]^{T}$
+\end_inset
+
+vektorünü,
+ yani next state vektörünü aşağıdaki formüllerle alabiliriz:
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+k_{1}=f(\mathbf{s}_{t},F)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+k_{2}=f\left(\mathbf{s}_{t}+\frac{\Delta t}{2}k_{1},F\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+k_{3}=f\left(\mathbf{s}_{t}+\frac{\Delta t}{2}k_{2},F\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+k_{4}=f(\mathbf{s}_{t}+\Delta tk_{3},F)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\textbf{Next State: }\mathbf{s}_{t+1}=\mathbf{s}_{t}+\frac{\Delta t}{6}(k_{1}+2k_{2}+2k_{3}+k_{4})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Yani,
+ önce k1,
+ k2,
+ k3 ve k4 sloplarını elde ediyoruz:
+ 4 farkli noktadaki değeri bulup,
+ weighted average aliyoruz.
+ Bu bize Euler yönteminden çok daha güçlü,
+ gerçeğe yakın sonuçlar verecektir.
+\end_layout
+
+\begin_layout Subsection
+Dataset Distribution
+\end_layout
+
+\begin_layout Standard
+Datasetin dinamiklerini formüllerle belirlemek ilk aşamaydı.
+ İkinci aşama ise farklı başlangıç noktaları vererek,
+ o noktalarda sarkacın hareketlerini takipetmek.
+ Bizim kabulettiğimiz sarkaç 360 derece dönebilen bir sarkaç modeli.
+ Yalnız MPC controlleri ile kuracağımız control sayesinde biz daha çok hedeflediğimiz dikey pozisyon etrafındaki açılarla çalışacağız.
+ Yani biz daha çok 0 derecenin yakın etraflarında sarkacın nasıl tepki verdiğini gözlemlemeliyiz ki,
+ bu civarda modelimiz dinamikleri kusursuz şekilde öğrensin.
+ Bunun için datasetin 75% oranını 0 angle civarında ele alacağız.
+ Aşağıdakı Python kodu bu bölgeyi hedefliyor.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+# 75% Operating Region
+\end_layout
+
+\begin_layout LyX-Code
+N_op = int(CHUNK_SIZE * 0.75)
+\end_layout
+
+\begin_layout LyX-Code
+x_op = np.random.uniform(-2.0,
+ 2.0,
+ size=(N_op,
+ 1))
+\end_layout
+
+\begin_layout LyX-Code
+x_dot_op = np.random.normal(0.0,
+ 1.0,
+ size=(N_op,
+ 1))
+\end_layout
+
+\begin_layout LyX-Code
+theta_op = np.random.normal(0.0,
+ 0.2,
+ size=(N_op,
+ 1))
+\end_layout
+
+\begin_layout LyX-Code
+theta_dot_op = np.random.normal(0.0,
+ 1.5,
+ size=(N_op,
+ 1))
+\end_layout
+
+\begin_layout LyX-Code
+forces_op = np.random.normal(0.0,
+ 3.0,
+ size=(N_op,
+ 1))
+\end_layout
+
+\begin_layout Standard
+Datasetin diğer 25%-lik kısmında ise broad area - yani tüm space ele alınmıştır.
+ Bu alanda artık pendulumun -180 ile 180 açıları arasındaki tüm noktalardaki hareketi gözlemlenecektir.
+ Aşağıdaki Python kodu da bu alanı belirliyor:
+ 
+\end_layout
+
+\begin_layout LyX-Code
+# 25% Wide Exploration
+\end_layout
+
+\begin_layout LyX-Code
+N_wide = CHUNK_SIZE - N_op
+\end_layout
+
+\begin_layout LyX-Code
+x_wide = np.random.uniform(-5.0,
+ 5.0,
+ size=(N_wide,
+ 1))
+\end_layout
+
+\begin_layout LyX-Code
+x_dot_wide = np.random.uniform(-10.0,
+ 10.0,
+ size=(N_wide,
+ 1))
+\end_layout
+
+\begin_layout LyX-Code
+theta_wide = np.random.uniform(-np.pi,
+ np.pi,
+ size=(N_wide,
+ 1))
+\end_layout
+
+\begin_layout LyX-Code
+theta_dot_wide = np.random.uniform(-20.0,
+ 20.0,
+ size=(N_wide,
+ 1))
+\end_layout
+
+\begin_layout LyX-Code
+forces_wide = np.random.uniform(-15.0,
+ 15.0,
+ size=(N_wide,
+ 1))
+\end_layout
+
+\begin_layout Standard
+Bu iki kısmı birleştirdikten sonra elimizde olacak datasetin %5-lik kısmında ise hiç kuvvet - force uygulamayacağız.
+ Bu da sadece ağırlık kuvvetinin altında,
+ başka hiçbir input kuvvet olmadan sarkacın nasıl hareket edeceğini modele öğretebilmek içindir.
+ 
+\end_layout
+
+\begin_layout Standard
+Dataseti yaratırken uyguladığımız başka bir metod ise angle wrapping metodudur.
+ Bu metodu kullanarak sarkaçın -179 açısına geldiğinde aniden +179 derece açıya zıplıyor gibi gözükmemesi içindir.
+ Bu konuyu matematiksel olarak diğer bölümde anlatacağım.
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\end_body
+\end_document
